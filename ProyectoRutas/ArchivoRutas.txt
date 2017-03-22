@@ -1,0 +1,6 @@
+San Pedro Sula,Tegucigalpa,250
+San Pedro Sula,La Ceiba,200
+San Pedro Sula,Puerto Cortes,100
+San Pedro Sula,Santa Rosa de Copan,300
+Tegucigalpa,La Ceiba,500
+Tegucigalpa,Choluteca,150
