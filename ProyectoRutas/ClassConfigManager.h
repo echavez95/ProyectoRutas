@@ -5,79 +5,9 @@
 #include "Classes.h"
 
 using namespace std;
+const int sizeMatriz = 50;
 
 ListaCiudades listaCiudades;
-
-class xCiudad /*Clase Ciudad, es decir un nodo del grafo*/
-{
-public:
-	string nombre;
-	int idCiudad;
-	xCiudad* Siguiente;
-
-	xCiudad(string nombreC, int id)
-	{
-		nombre = nombreC;
-		idCiudad = id;
-		Siguiente = 0;
-	}
-};
-
-class ListaCiudades {
-public:
-	xCiudad* Primero;
-	xCiudad* Ultimo;
-	int Size;
-
-	ListaCiudades()
-	{
-		Primero = 0;
-		Ultimo = 0;
-		Size = 0;
-	}
-
-	void agregarCiudad(string nombre) {
-		if (Primero == 0)
-		{
-			xCiudad* nuevaCiudad = new xCiudad(nombre, Size);
-			Primero = Ultimo = nuevaCiudad;
-		}
-		else
-		{
-			if (!existeCiudad(nombre)) {
-				Size++;
-				xCiudad* nuevaCiudad = new xCiudad(nombre, Size);
-				Ultimo->Siguiente = nuevaCiudad;
-				Ultimo = nuevaCiudad;
-			}
-		}
-		sizeMatriz = Size;
-	}
-
-	bool existeCiudad(string nombre) {
-		xCiudad* tempCiudad;
-		tempCiudad = Primero;
-		for (int i = 0; i <= Size; i++) {
-			if (tempCiudad->nombre == nombre)
-			{
-				return true;
-			}
-			tempCiudad = tempCiudad->Siguiente;
-		}
-		return false;
-	}
-
-	void imprimirListaCiudades()
-	{
-		xCiudad* tempCiudad;
-		tempCiudad = Primero;
-		for (int i = 0; i <= Size; i++) {
-			cout << "Id Ciudad: " << tempCiudad->idCiudad <<
-				" Nombre: " << tempCiudad->nombre << endl;
-			tempCiudad = tempCiudad->Siguiente;
-		}
-	}
-};
 
 class Ruta{ /*Clase Ruta, Para almaenar las filas del archivo de rutas al leerlo*/
     public:
@@ -146,6 +76,26 @@ class ListaRutasCosto{ /*Lista que almacena los valores leidos del archivo de ru
         return false;
     }
 
+	int getCosto(int idCDesde, int idCHasta) {
+		string ndesde = listaCiudades.getNombreCiudad(idCDesde);
+		string nhasta = listaCiudades.getNombreCiudad(idCHasta);
+
+		Ruta* tempRuta;
+		tempRuta = Primero;
+		for (int i = 0; i <= Size; i++) {
+			if (tempRuta->Desde.nombre == ndesde && tempRuta->Hasta.nombre == nhasta)
+			{
+				return tempRuta->Costo;
+			}
+			if (tempRuta->Desde.nombre == nhasta && tempRuta->Hasta.nombre == ndesde)
+			{
+				return tempRuta->Costo;
+			}
+			tempRuta = tempRuta->Siguiente;
+		}
+		return 0;
+	}
+
     void imprimirListaRutas()
     {
         Ruta* tempRuta;
@@ -157,11 +107,11 @@ class ListaRutasCosto{ /*Lista que almacena los valores leidos del archivo de ru
     }
 };
 
+ListaRutasCosto listaRutas;
+
 class ConfigManager{
     public:
-        ListaRutasCosto listaRutas;
          /**TEMPORAL PARA PRUEBAS**/
-        int indiceActualArreglo=0;
         void leerArchivo()
         {
             //string nombreArchivo="ArchivoRutas.txt";
@@ -196,38 +146,53 @@ class ConfigManager{
 				listaCiudades.agregarCiudad(tempRuta->Hasta.nombre);
                 tempRuta=tempRuta->Siguiente;
             }
-
             if (!infile.eof())
             {
             cerr << "Terminado!\n";
             }
         }
-		/*
-        void insertarArregloCiudades(string NombreCiudad)
-        {
-            if(indiceActualArreglo==0){
-                Ciudad nueva(NombreCiudad);
-                arregloCiudades[indiceActualArreglo]=nueva ;
-                arregloCiudades[indiceActualArreglo].nombre=NombreCiudad;
-                cout<<arregloCiudades[indiceActualArreglo].nombre<<endl;
-                indiceActualArreglo++;
-            }else
-                {
-                    for(int i=0;i<indiceActualArreglo;i++){
-                        if(arregloCiudades[i].nombre==NombreCiudad){
-                            return;
-                        }
-                    }
-                    arregloCiudades[indiceActualArreglo].nombre=NombreCiudad;
-                    indiceActualArreglo++;
-                }
-        }
-
-        void imprimirArregloCiudades()
-        {
-            for(int i=0;i<indiceActualArreglo;i++){
-               cout<<arregloCiudades[i].nombre<<endl;
-            }
-        }*/
+		
+		
 };
 
+class Grafo {
+public:
+	int Matriz[sizeMatriz][sizeMatriz];
+
+	Grafo() {
+		inicializarMatriz();
+	}
+
+	void inicializarMatriz() { //inicializa toda la matriz con los datos de las rutas
+		if(listaCiudades.Size<=sizeMatriz){
+			for (int i = 0; i <= listaCiudades.Size; i++) {
+				for (int j = 0; j <= listaCiudades.Size; j++) {
+					Matriz[i][j] = listaRutas.getCosto(i,j);
+				}
+			}
+		}
+		else {
+			cout << "No se pueden usar mas de 50 ciudades!";
+		}
+	}
+
+	void imprimirMatriz() {
+			cout << "Matriz de Adyacencia" << endl;
+			cout << "\t";
+			for (int i = 0; i <=listaCiudades.Size; i++) {
+				cout << i << "\t";
+			}
+
+			cout << endl;
+			for (int i = 0; i <=listaCiudades.Size; i++) {
+				cout << i << "\t";
+				for (int j = 0; j <=listaCiudades.Size; j++) {
+					cout << Matriz[i][j] << "\t";
+				}
+				cout << endl;
+			}
+			cout << endl;
+	}
+
+
+};

@@ -1,19 +1,29 @@
 #include <iostream>
 using namespace std;
 
-int sizeMatriz;
+
 
 class Paquete /*Clase paquete para armar las pilas de paquetes de una ciudad*/
 {
     public:
-        int Value;
+        int id;
+		string remitente;
+		string destinatario;
+		int idCorigen;			//id de la ciudad de origen
+		int idCdestino;			//id de la ciudad de destino
         Paquete* NextPaquete;
 
-    Paquete(int val)
+    Paquete(int idp,string r, string d,int ido, int idd)
     {
-        Value=val;
+		id=idp;
+		remitente = r;
+		destinatario = d;
+		idCorigen = ido;
+		idCdestino = idd;
         NextPaquete = 0;
     }
+
+	Paquete(){}
 
     ~Paquete(){}
 };
@@ -28,9 +38,9 @@ class PilaPaquetes /*Clase para implementas la pila de paquetes*/
         Tope =0;
 	}
 
-    void Push(int valor)
+    void Push(Paquete nuevo)
     {
-        Paquete* nodo = new Paquete(valor);
+        Paquete* nodo = new Paquete(nuevo.id, nuevo.remitente, nuevo.destinatario, nuevo.idCorigen, nuevo.idCdestino);
         if(Vacia())
         {
             Tope=nodo;
@@ -42,18 +52,16 @@ class PilaPaquetes /*Clase para implementas la pila de paquetes*/
             }
     }
 
-    int Pop()
+    Paquete Pop()
     {
         if(Vacia()){
             cout<<"Pila Vacia"<<endl;
         }
         else
             {
-                int retorno;
-                Paquete* nodoTemp;
-                retorno=Tope->Value;
+				Paquete retorno(Tope->id,Tope->remitente,Tope->destinatario,Tope->idCorigen,Tope->idCdestino);
 
-                nodoTemp=Tope;
+				Paquete* nodoTemp=Tope;
                 Tope=Tope->NextPaquete;
 
                 delete nodoTemp;
@@ -80,12 +88,15 @@ class PilaPaquetes /*Clase para implementas la pila de paquetes*/
                 Paquete* nodoTemp=Tope;
                 do
                 {
-                    cout<<nodoTemp->Value<<endl;
+                    cout << "Id: "<<nodoTemp->id<<endl;
+					cout << "Remitente: " << nodoTemp->remitente << endl;
+					cout << "Destinatario: " << nodoTemp->destinatario << endl;
+					cout << "Ciudad Origen: " << nodoTemp->idCorigen << endl;
+					cout << "Ciudad Destino: " << nodoTemp->idCdestino << endl;
                     nodoTemp=nodoTemp->NextPaquete;
                 }while(nodoTemp!=0);
             }
     }
-
 };
 
 class Ciudad /*Clase Ciudad, es decir un nodo del grafo*/
@@ -94,22 +105,22 @@ class Ciudad /*Clase Ciudad, es decir un nodo del grafo*/
         PilaPaquetes pilaPaquetesCiudad;
         string nombre;
 		int idCiudad;
-		//Ciudad* Siguiente;
+		Ciudad* Siguiente;
 
     Ciudad(string nombreC,int id)
     {
         nombre=nombreC;
 		idCiudad = id;
-		//Siguiente = 0;
+		Siguiente = 0;
     }
 
     Ciudad()
     {
     }
 
-    void ingresarPaquete(int valorPaquete)
+    void ingresarPaquete(Paquete nuevo)
     {
-        pilaPaquetesCiudad.Push(valorPaquete);
+        pilaPaquetesCiudad.Push(nuevo);
     }
 
     void verPilaPaquetes()
@@ -117,11 +128,12 @@ class Ciudad /*Clase Ciudad, es decir un nodo del grafo*/
         pilaPaquetesCiudad.VerPila();
     }
 
-    int sacarPaquete(int valorBuscar)
+	
+    Paquete sacarPaquete(int idPaquete)
     {
         Paquete* paqueteTemp;
-        int resultado =NULL;
-        if(pilaPaquetesCiudad.Tope->Value==valorBuscar){
+        Paquete resultado;
+        if(pilaPaquetesCiudad.Tope->id==idPaquete){
             resultado=pilaPaquetesCiudad.Pop();
             return resultado;
         }else
@@ -133,7 +145,7 @@ class Ciudad /*Clase Ciudad, es decir un nodo del grafo*/
             /*a=pilaPaquetesCiudad.Tope->Value;*///debug
             do{
                 /*a=paqueteTemp->Value;*///debug
-                if(paqueteTemp->Value==valorBuscar){
+                if(paqueteTemp->id==idPaquete){
                     resultado = pilaPaquetesCiudad.Pop();
                     break;
                 }
@@ -162,133 +174,87 @@ class Ciudad /*Clase Ciudad, es decir un nodo del grafo*/
            return resultado;
         }
     }
-
-};
-/*
-
-*/
-class Adyacente {
-public:
-	Vertice* Destino;
-	int Costo;
-	Adyacente* Siguiente;
-
-	Adyacente() {
-		Destino = 0;
-		Costo = 0;
-		Siguiente = 0;
-	}
-
-	Adyacente(Vertice* v, int c) {
-		Destino = v;
-		Costo = c;
-		Siguiente = 0;
-	}
 };
 
-class ListaAdyacentes
-{
+class ListaCiudades {
 public:
-	Adyacente* Primero;
-	Adyacente* Ultimo;
+	Ciudad* Primero;
+	Ciudad* Ultimo;
+	int Size;
 
-	ListaAdyacentes() {
+	ListaCiudades()
+	{
 		Primero = 0;
 		Ultimo = 0;
+		Size = 0;
 	}
 
-	void agregarAdyacente(Vertice* verticenuevo,int costo ) {
-		if (Primero==0)
+	void agregarCiudad(string nombre) {
+		if (Primero == 0)
 		{
-			Adyacente* nuevoAdyacente = new Adyacente(verticenuevo, costo);
-			Primero = Ultimo = nuevoAdyacente;
-		}else{
-			Adyacente* nuevoAdyacente = new Adyacente(verticenuevo, costo);
-			Ultimo->Siguiente = nuevoAdyacente;
-			Ultimo = nuevoAdyacente;
+			Ciudad* nuevaCiudad = new Ciudad(nombre, Size);
+			Primero = Ultimo = nuevaCiudad;
 		}
-	}
-
-};
-
-class Vertice
-{
-public:
-	Ciudad* City;
-	Vertice* Siguiente;
-	ListaAdyacentes listaAdyacentes;
-
-	Vertice(string nombre) {
-		City->nombre = nombre;
-		Siguiente = 0;
-	}
-};
-
-class ListaVertices {
-	public:
-		Vertice* Primero;
-		Vertice* Ultimo;
-		int Size;
-
-		ListaVertices()
+		else
 		{
-			Primero = 0;
-			Size = 0;
+			if (!existeCiudad(nombre)) {
+				Size++;
+				Ciudad* nuevaCiudad = new Ciudad(nombre, Size);
+				Ultimo->Siguiente = nuevaCiudad;
+				Ultimo = nuevaCiudad;
+			}
 		}
+		const int sizeMatriz = Size;
+	}
 
-		void agregarVertice(string nombre) {
-			if (Primero == 0)
+	bool existeCiudad(string nombre) {
+		Ciudad* tempCiudad;
+		tempCiudad = Primero;
+		for (int i = 0; i <= Size; i++) {
+			if (tempCiudad->nombre == nombre)
 			{
-				Vertice* nuevaCiudad = new Vertice(nombre);
-				nuevaCiudad->City->idCiudad = 1;
-				Primero = Ultimo = nuevaCiudad;
+				return true;
 			}
-			else
-			{
-				if (!existeCiudad(nombre)) {
-					Vertice* nuevaCiudad = new Vertice(nombre);
-					Ultimo->Siguiente = nuevaCiudad;
-					nuevaCiudad->City->idCiudad = Ultimo->City->idCiudad + 1;
-					Ultimo = nuevaCiudad;
-					Size++;
-				}
-			}
+			tempCiudad = tempCiudad->Siguiente;
 		}
+		return false;
+	}
 
-		bool existeCiudad(string nombre) {
-			Vertice* tempCiudad;
-			tempCiudad = Primero;
-			for (int i = 0; i <= Size; i++) {
-				if (tempCiudad->City->nombre == nombre)
-				{
-					return true;
-				}
-				tempCiudad = tempCiudad->Siguiente;
-			}
-			return false;
+	void imprimirListaCiudades()
+	{
+		Ciudad* tempCiudad;
+		tempCiudad = Primero;
+		for (int i = 0; i <= Size; i++) {
+			cout << "Id Ciudad: " << tempCiudad->idCiudad <<
+				" Nombre: " << tempCiudad->nombre << endl;
+			tempCiudad = tempCiudad->Siguiente;
 		}
+	}
+
+	int getIdCiudad(string nombre) {
+		Ciudad* tempCiudad;
+		tempCiudad = Primero;
+		for (int i = 0; i <= Size; i++) {
+			if (tempCiudad->nombre == nombre)
+			{
+				return tempCiudad->idCiudad;
+			}
+			tempCiudad = tempCiudad->Siguiente;
+		}
+		return -1;
+	}
+
+	string getNombreCiudad(int id) {
+		Ciudad* tempCiudad;
+		tempCiudad = Primero;
+		for (int i = 0; i <= Size; i++) {
+			if (tempCiudad->idCiudad == id)
+			{
+				return tempCiudad->nombre;
+			}
+			tempCiudad = tempCiudad->Siguiente;
+		}
+		return "No Existe";
+	}
+
 };
-
-
-/*
-class Matriz {
-	public:
-		int* Matriz = new int[sizeMatriz][sizeMatriz];
-
-	void inicializarMatriz() {
-		for (int i = 0; i <= sizeMatriz; i++) {
-			for (int j = 0; j <= sizeMatriz; j++) {
-				Matriz[i][j] = 0;
-			}
-		}
-	}
-
-	void imprimirMatriz() {
-		for (int i = 0; i <= sizeMatriz; i++) {
-
-			cout << "Id Ciudad: " << Matriz[i] << endl;
-		}
-	}
-
-};*/
-
