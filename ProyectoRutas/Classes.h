@@ -1,7 +1,7 @@
 #include <iostream>
 using namespace std;
 
-
+int idpaquetes=0;
 
 class Paquete /*Clase paquete para armar las pilas de paquetes de una ciudad*/
 {
@@ -23,7 +23,14 @@ class Paquete /*Clase paquete para armar las pilas de paquetes de una ciudad*/
         NextPaquete = 0;
     }
 
-	Paquete(){}
+	Paquete(){
+		id = 0;
+		remitente = "0";
+		destinatario = "0";
+		idCorigen =0;
+		idCdestino = 0;
+		NextPaquete = 0;
+	}
 
     ~Paquete(){}
 };
@@ -172,7 +179,7 @@ class Ciudad /*Clase Ciudad, es decir un nodo del grafo*/
             pilaTemporal.VerPila();
             */
            return resultado;
-        }
+		}
     }
 };
 
@@ -224,9 +231,9 @@ public:
 	{
 		Ciudad* tempCiudad;
 		tempCiudad = Primero;
+		cout << setw(2)<<"Id" << setw(20) << "Nombre"<<endl;
 		for (int i = 0; i <= Size; i++) {
-			cout << "Id Ciudad: " << tempCiudad->idCiudad <<
-				" Nombre: " << tempCiudad->nombre << endl;
+			cout<<setw(2)<<tempCiudad->idCiudad << setw(20) << tempCiudad->nombre << endl;
 			tempCiudad = tempCiudad->Siguiente;
 		}
 	}
@@ -255,6 +262,47 @@ public:
 			tempCiudad = tempCiudad->Siguiente;
 		}
 		return "No Existe";
+	}
+
+	void verPilaCiudad(int idCiudad) {
+		Ciudad* tempCiudad;
+		tempCiudad = Primero;
+		for (int i = 0; i <= Size; i++) {
+			if (tempCiudad->idCiudad == idCiudad)
+			{
+				tempCiudad->verPilaPaquetes();
+				return;
+			}
+			tempCiudad = tempCiudad->Siguiente;
+		}
+		cout << "No existe esta ciudad";
+	}
+
+	void agregarPaqueteCiudad(int idDestino, Paquete nuevoPaquete) {
+		Ciudad* tempCiudad;
+		tempCiudad = Primero;
+		for (int i = 0; i <= Size; i++) {
+			if (tempCiudad->idCiudad == idDestino)
+			{
+				tempCiudad->ingresarPaquete(nuevoPaquete);
+				return;
+			}
+			tempCiudad = tempCiudad->Siguiente;
+		}
+		cout << "No existe esta ciudad";
+	}
+
+	Paquete retirarPaqueteCiudad(int idCiudad, int idpaquete) {
+		Ciudad* tempCiudad;
+		tempCiudad = Primero;
+		for (int i = 0; i <= Size; i++) {
+			if (tempCiudad->idCiudad == idCiudad)
+			{
+				return tempCiudad->sacarPaquete(idpaquete);
+			}
+			tempCiudad = tempCiudad->Siguiente;
+		}
+		cout << "No existe esta ciudad";
 	}
 
 };

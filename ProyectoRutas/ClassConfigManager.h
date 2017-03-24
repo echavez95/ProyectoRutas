@@ -2,10 +2,13 @@
 #include <iostream>
 #include <sstream>
 #include <string>
+#include <iomanip>
 #include "Classes.h"
+#define INF 99999
 
 using namespace std;
 const int sizeMatriz = 50;
+int cantidadCiudades = 0;
 
 ListaCiudades listaCiudades;
 
@@ -146,6 +149,7 @@ class ConfigManager{
 				listaCiudades.agregarCiudad(tempRuta->Hasta.nombre);
                 tempRuta=tempRuta->Siguiente;
             }
+			cantidadCiudades = listaCiudades.Size;
             if (!infile.eof())
             {
             cerr << "Terminado!\n";
@@ -158,15 +162,18 @@ class ConfigManager{
 class Grafo {
 public:
 	int Matriz[sizeMatriz][sizeMatriz];
+	int costoCiudad[sizeMatriz];
+	int rutasCiudad[sizeMatriz];
+	int costosTodasCiudades[sizeMatriz][sizeMatriz];
 
 	Grafo() {
 		inicializarMatriz();
 	}
 
 	void inicializarMatriz() { //inicializa toda la matriz con los datos de las rutas
-		if(listaCiudades.Size<=sizeMatriz){
-			for (int i = 0; i <= listaCiudades.Size; i++) {
-				for (int j = 0; j <= listaCiudades.Size; j++) {
+		if(cantidadCiudades <=sizeMatriz){
+			for (int i = 0; i <= cantidadCiudades; i++) {
+				for (int j = 0; j <= cantidadCiudades; j++) {
 					Matriz[i][j] = listaRutas.getCosto(i,j);
 				}
 			}
@@ -179,14 +186,14 @@ public:
 	void imprimirMatriz() {
 			cout << "Matriz de Adyacencia" << endl;
 			cout << "\t";
-			for (int i = 0; i <=listaCiudades.Size; i++) {
+			for (int i = 0; i <= cantidadCiudades; i++) {
 				cout << i << "\t";
 			}
 
 			cout << endl;
-			for (int i = 0; i <=listaCiudades.Size; i++) {
+			for (int i = 0; i <= cantidadCiudades; i++) {
 				cout << i << "\t";
-				for (int j = 0; j <=listaCiudades.Size; j++) {
+				for (int j = 0; j <= cantidadCiudades; j++) {
 					cout << Matriz[i][j] << "\t";
 				}
 				cout << endl;
@@ -194,5 +201,125 @@ public:
 			cout << endl;
 	}
 
+	int minDistance(int dist[], bool sptSet[])
+	{
+		// Inicializar valor minimo
+		int min = INT_MAX, min_index;
+		for (int i = 0; i <= cantidadCiudades; i++)
+			if (sptSet[i] == false && dist[i] <= min)
+				min = dist[i], min_index = i;
+		return min_index;
+	}
+
+	//Algoritmo de DIKJSTRA para calcular costo minimo entre ciudades
+	bool CostoMinimo(int idCorigen,int idCdestino) {
+		if (idCorigen == idCdestino) { cout << "Accion invalida"<<endl; return false; }
+
+		bool conocido[8];		
+
+		for (int i = 0; i <= cantidadCiudades; i++) {
+			rutasCiudad[i] = -1, costoCiudad[i] = INT_MAX, conocido[i] = false;
+		}
+
+		costoCiudad[idCorigen] = 0;
+		for (int count = 0; count <= cantidadCiudades - 1; count++)
+		{
+			int u = minDistance(costoCiudad, conocido);
+			conocido[u] = true;
+
+			for (int v = 0; v <= cantidadCiudades; v++)
+				if (!conocido[v] && Matriz[u][v] && costoCiudad[u] != INT_MAX
+					&& costoCiudad[u] + Matriz[u][v] < costoCiudad[v]) {
+					costoCiudad[v] = costoCiudad[u] + Matriz[u][v];
+					rutasCiudad[v] = u;
+				}
+		}
+
+		return true;
+	}
+
+	//muestra el costo entre una ciudad de origen y el destino
+	void MostrarCosto(int origen,int destino)
+	{
+		
+		int costo;
+		for (int i = 0; i <= destino; i++) {
+			costo = costoCiudad[i];
+		}
+		
+		int padre;
+		int actual = destino;
+		string ruta = listaCiudades.getNombreCiudad(actual);
+		do {
+			padre = rutasCiudad[actual];
+			actual = padre;
+			if (actual<0) {
+				break;
+			}
+			ruta =  listaCiudades.getNombreCiudad(actual) + "------->" + ruta;
+		} while (true);
+		cout << "Costo: " << costo << " Ruta: " << ruta << endl;
+	}
+
+	// floyd para calculo de menor costo entre todos los vertices
+	void CostoMinimoTodasCiudades()
+	{
+		int i, j, k;
+
+		for (i = 0; i <= cantidadCiudades; i++) 
+		{
+			for (j = 0; j <= cantidadCiudades; j++) 
+			{
+					costosTodasCiudades[i][j] = Matriz[i][j];
+			}
+		}
+
+		for (int a = 0; a <= cantidadCiudades; a++)
+		{
+			for (int b = 0; b <= cantidadCiudades; b++)
+			{
+				if (a == b) {
+					costosTodasCiudades[a][b] = 0;
+				}
+				else if(costosTodasCiudades[a][b]==0)
+					costosTodasCiudades[a][b] = INF;
+			}
+		}
+				
+		for (k = 0; k <= cantidadCiudades; k++)
+		{
+			for (i = 0; i <= cantidadCiudades; i++)
+			{
+				for (j = 0; j <= cantidadCiudades; j++)
+				{
+					if (costosTodasCiudades[i][k] + costosTodasCiudades[k][j] < costosTodasCiudades[i][j])
+						costosTodasCiudades[i][j] = costosTodasCiudades[i][k] + costosTodasCiudades[k][j];
+				}
+			}
+		}
+		
+	}
+
+	/* imprime la matriz de costos */
+	void mostrarMatrizCostos()
+	{
+		cout << setw(22)<<" ";
+		for (int a = 0; a <= cantidadCiudades; a++) {
+			cout<< setw(5) << a ;
+		}
+		cout << endl;
+		for (int i = 0; i <= cantidadCiudades; i++)
+		{
+			cout <<setw(20)<< listaCiudades.getNombreCiudad(i)<<" "<<i<<" ";
+			for (int j = 0; j <= cantidadCiudades; j++)
+			{
+				if (costosTodasCiudades[i][j] == INF)
+					cout << setw(5) << "0" ;
+				else
+					cout << setw(5) << costosTodasCiudades[i][j];
+			}
+			cout << endl;
+		}
+	}
 
 };
