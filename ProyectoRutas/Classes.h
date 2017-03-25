@@ -1,5 +1,8 @@
 #include <iostream>
+#include <vector>
+#include <SFML/Graphics.hpp>
 using namespace std;
+using namespace sf;
 
 int idpaquetes=0;
 
@@ -32,8 +35,68 @@ class Paquete /*Clase paquete para armar las pilas de paquetes de una ciudad*/
 		NextPaquete = 0;
 	}
 
+	string verPaquete() {
+		return "Id: " + to_string(id) + "\nRemitente: " + remitente + "\nDestinatario: " + destinatario + "\nOrigen: " + to_string(idCorigen) + "\nDestino: " + to_string(idCdestino);
+	}
+
     ~Paquete(){}
 };
+
+
+void mostrarPila(vector<Paquete> paquetes) {
+	RenderWindow window(VideoMode(400, 600), "PIla de la Ciudad");
+
+	Font fuente;
+	if (!fuente.loadFromFile("arial.ttf"))
+	{
+		return;
+	}
+
+	vector<RectangleShape> cuadros;
+	vector<Text> textos;
+
+	float y = 10;
+	float espacio;
+	for (int i = 0; i < paquetes.size(); i++) {
+		
+		Text text;
+		text.setFont(fuente);
+		text.setString(paquetes.at(i).verPaquete());
+		text.setCharacterSize(20);
+		text.setFillColor(Color::White);
+		text.setStyle(Text::Bold);
+		text.setPosition(10, y);
+
+		RectangleShape cuadro(Vector2f(text.getLocalBounds().width+2, text.getLocalBounds().height+6));
+		cuadro.setFillColor(Color::Blue);
+		cuadro.setOutlineColor(Color::White);
+		cuadro.setOutlineThickness(3);
+		cuadro.setPosition(10, y);
+
+		espacio = text.getOrigin().y + text.getLocalBounds().height;
+		y = y + espacio+10;
+		cuadros.push_back(cuadro);
+		textos.push_back(text);
+
+	}
+	
+	while (window.isOpen())
+	{
+		sf::Event event;
+		while (window.pollEvent(event))
+		{
+			if (event.type == sf::Event::Closed)
+				window.close();
+		}
+
+		window.clear();
+		for (int i = 0; i < textos.size(); i++) {
+			window.draw(cuadros.at(i));
+			window.draw(textos.at(i));
+		}
+		window.display();
+	}
+}
 
 class PilaPaquetes /*Clase para implementas la pila de paquetes*/
 {
@@ -92,16 +155,20 @@ class PilaPaquetes /*Clase para implementas la pila de paquetes*/
         }
         else
             {
+				vector<Paquete> paquetes;
                 Paquete* nodoTemp=Tope;
                 do
                 {
-                    cout << "Id: "<<nodoTemp->id<<endl;
-					cout << "Remitente: " << nodoTemp->remitente << endl;
-					cout << "Destinatario: " << nodoTemp->destinatario << endl;
-					cout << "Ciudad Origen: " << nodoTemp->idCorigen << endl;
-					cout << "Ciudad Destino: " << nodoTemp->idCdestino << endl;
+					Paquete agregar;
+					agregar.id = nodoTemp->id;
+					agregar.remitente = nodoTemp->remitente;
+					agregar.destinatario = nodoTemp->destinatario;
+					agregar.idCorigen = nodoTemp->idCorigen;
+					agregar.idCdestino = nodoTemp->idCdestino;
+					paquetes.push_back(agregar);
                     nodoTemp=nodoTemp->NextPaquete;
                 }while(nodoTemp!=0);
+				mostrarPila(paquetes);
             }
     }
 };
@@ -197,6 +264,8 @@ public:
 	}
 
 	void agregarCiudad(string nombre) {
+		if (nombre == "")return;
+
 		if (Primero == 0)
 		{
 			Ciudad* nuevaCiudad = new Ciudad(nombre, Size);

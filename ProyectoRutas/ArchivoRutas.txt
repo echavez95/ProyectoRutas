@@ -5,4 +5,4 @@ San Pedro Sula,Santa Rosa de Copan,300
 Tegucigalpa,La Ceiba,500
 Tegucigalpa,Choluteca,150
 Puerto Cortes,Choluteca,50
-Omoa,Puerto Cortes,10
+Omoa,,

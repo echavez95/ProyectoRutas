@@ -8,8 +8,11 @@
 
 using namespace std;
 
+
 int main()
 {
+	//dibujarRuta();
+	
 	ConfigManager fmHandler;
 	fmHandler.leerArchivo();
 	Grafo grafoRutas;
@@ -71,14 +74,14 @@ int main()
 				cout << "Destino: ";
 				cin >> idDestino;
 				cout << endl;
-				cout << "Remitente: ";
-				cin >> remitente;
-				cout << "Destinatario: ";
-				cin >> destinatario;
-				idpaquetes++;
 				if (grafoRutas.CostoMinimo(idOrigen, idDestino)) {
-					grafoRutas.MostrarCosto(idOrigen, idDestino);
+					cout << "Remitente: ";
+					cin >> remitente;
+					cout << "Destinatario: ";
+					cin >> destinatario;
+					idpaquetes++;
 					cout << "El Id del Paquete es: "<<idpaquetes<< endl;
+					grafoRutas.MostrarCosto(idOrigen, idDestino);
 					Paquete nuevo(idpaquetes, remitente, destinatario, idOrigen, idDestino);
 					listaCiudades.agregarPaqueteCiudad(idDestino,nuevo);
 					cout << "Paquete enviado!" << endl;

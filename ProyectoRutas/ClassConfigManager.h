@@ -3,10 +3,12 @@
 #include <sstream>
 #include <string>
 #include <iomanip>
+#include <vector>
 #include "Classes.h"
 #define INF 99999
 
 using namespace std;
+using namespace sf;
 const int sizeMatriz = 50;
 int cantidadCiudades = 0;
 
@@ -82,6 +84,7 @@ class ListaRutasCosto{ /*Lista que almacena los valores leidos del archivo de ru
 	int getCosto(int idCDesde, int idCHasta) {
 		string ndesde = listaCiudades.getNombreCiudad(idCDesde);
 		string nhasta = listaCiudades.getNombreCiudad(idCHasta);
+		if (ndesde == "No Existe" || nhasta == "No Existe") return 0;
 
 		Ruta* tempRuta;
 		tempRuta = Primero;
@@ -159,6 +162,79 @@ class ConfigManager{
 		
 };
 
+
+void dibujarRuta(vector<string> rutaImprimir,int Costo) {
+	RenderWindow window(VideoMode(400, 600), "Ruta de Envio");
+
+	Font fuente;
+	if (!fuente.loadFromFile("arial.ttf"))
+	{
+		return;
+	}
+
+	vector<Text> texto;
+	vector<CircleShape> circulos;
+
+	float y = 10;
+	float espacio;
+
+	for (int i = rutaImprimir.size(); i >0 ; i--) {
+		Text text;
+		text.setFont(fuente);
+		text.setString(rutaImprimir.at(i - 1));
+		text.setCharacterSize(20);
+		text.setFillColor(Color::White);
+		text.setStyle(Text::Bold);
+		
+
+		CircleShape circulo(30);
+		circulo.setFillColor(Color::Green);
+		circulo.setPosition(10, y);
+
+		text.setPosition(10, y+15);
+
+		espacio = circulo.getOrigin().y+(circulo.getLocalBounds().height*2);
+		y = y + espacio ;
+		
+		texto.push_back(text);
+		circulos.push_back(circulo);
+	}
+
+	while (window.isOpen())
+	{
+		sf::Event event;
+		while (window.pollEvent(event))
+		{
+			if (event.type == sf::Event::Closed)
+				window.close();
+		}
+
+		window.clear();
+
+		RectangleShape line(Vector2f(3, y-espacio));
+		line.setPosition(40, 10);
+		window.draw(line);
+
+		for (int i = 0; i < texto.size(); i++) {
+			window.draw(circulos.at(i));
+			window.draw(texto.at(i));
+		}
+		
+		Text costo;
+		costo.setFont(fuente);
+		costo.setString("Costo \n de Envio: \n \t" + to_string(Costo));
+		costo.setCharacterSize(20);
+		costo.setFillColor(Color::White);
+		costo.setStyle(Text::Bold);
+		costo.setPosition(window.getSize().x - (window.getSize().x /3), window.getSize().y/4);
+		window.draw(costo);
+
+		window.display();
+	}
+}
+
+
+
 class Grafo {
 public:
 	int Matriz[sizeMatriz][sizeMatriz];
@@ -235,30 +311,38 @@ public:
 				}
 		}
 
+		int costo = costoCiudad[idCdestino];
+		if (costo == INT_MAX)
+		{
+			cout << "No se puede enviar a este ciudad" << endl;
+			return false;
+		}
 		return true;
 	}
 
 	//muestra el costo entre una ciudad de origen y el destino
 	void MostrarCosto(int origen,int destino)
 	{
+		vector<string> vRuta;
+
+		int costo = costoCiudad[destino];
 		
-		int costo;
-		for (int i = 0; i <= destino; i++) {
+		/*for (int i = 0; i <= destino; i++) {
 			costo = costoCiudad[i];
-		}
+		}*/
 		
 		int padre;
 		int actual = destino;
-		string ruta = listaCiudades.getNombreCiudad(actual);
+		vRuta.push_back(listaCiudades.getNombreCiudad(actual));
 		do {
 			padre = rutasCiudad[actual];
 			actual = padre;
 			if (actual<0) {
 				break;
 			}
-			ruta =  listaCiudades.getNombreCiudad(actual) + "------->" + ruta;
+			vRuta.push_back(listaCiudades.getNombreCiudad(actual));
 		} while (true);
-		cout << "Costo: " << costo << " Ruta: " << ruta << endl;
+		dibujarRuta(vRuta,costo);
 	}
 
 	// floyd para calculo de menor costo entre todos los vertices
